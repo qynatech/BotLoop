@@ -206,7 +206,7 @@ app.post("/admin/approve", (req, res) => {
 });
 
 app.get("/admin/riwayat", (req, res) => {
-    const sql = "SELECT * FROM transactions ORDER BY created_at DESC";
+    const sql = `SELECT t.*, u.nama, u.kelas FROM transactions t JOIN users u ON t.user_id = u.id ORDER BY t.created_at DESC`;
     db.query(sql, (err, result) => {
         if (err) return res.status(500).json({ message: "error" });
         res.json(result);
