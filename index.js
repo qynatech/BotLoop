@@ -215,7 +215,7 @@ app.get("/admin/riwayat", (req, res) => {
 
 app.post("/admin/tolak", (req, res) => {
     const { id } = req.body;
-    const sql = "UPDATE transactions SET status= = 'ditolak' WHERE id = ?";
+    const sql = "UPDATE transactions SET status= 'ditolak' WHERE id = ?";
     db.query(sql, [id], (err) => {
         if (err) return res.status(500).json({message: "gagal tolak"});
         res.json({ message: "penarikan ditolak" });
