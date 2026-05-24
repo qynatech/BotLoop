@@ -180,27 +180,35 @@ app.get("/admin/pending", (req, res) => {
 });
 
 app.post("/admin/approve", (req, res) => {
-    const {id} = req.body;
+    const { id } = req.body;
 
     const getTrans = "SELECT * FROM transactions WHERE id = ?";
 
     db.query(getTrans, [id], (err, result) => {
         if (err || result.length === 0) {
-            return res.status(404).json({ message: "transaksi tidak ditemukan"});
+            return res.status(404).json({ message: "transaksi tidak ditemukan" });
         }
-        
+
         const trx = result[0];
         const updateStatus = "UPDATE transactions SET status = 'approved' WHERE id = ?";
 
         db.query(updateStatus, [id], (err2) => {
             if (err2) {
-                return res.status(500).json({ message: "gagal approve"});
+                return res.status(500).json({ message: "gagal approve" });
             }
 
-            if(trx.tipe === "tarik") {
-                db.query("UPDATE users SET saldo = saldo - ? WHERE id = ?", [trx.jumlah, trx.user_id]);
+            if (trx.tipe === "tarik") {
+                db.query(
+                    "UPDATE users SET saldo = saldo - ? WHERE id = ?",
+                    [trx.jumlah, trx.user_id],
+                    (err3) => {
+                        if (err3) return res.status(500).json({ message: "gagal update saldo" });
+                        res.json({ message: "transaksi di approve" });
+                    }
+                );
+            } else {
+                res.json({ message: "transaksi di approve" });
             }
-            res.json({ message: "transaksi di approve"});
         });
     });
 });
@@ -243,6 +251,32 @@ app.get("/users", (req, res) => {
         if(err) return res.status(500).json({ message: "error"});
 
         res.json(result);
+    });
+});
+
+app.get("/admin/laporan", (req, res) => {
+    const sql = `SELECT COALESCE(SUM(berat), 0) AS total_berat_kg,
+    COALESCE(SUM(jumlah), 0) AS total_nilai_setor,
+    COUNT(*) AS total_transaksi_setor FROM transactions WHERE tipe = 'setor' AND status = 'approved'`;
+
+    const sqlSaldo = `
+    SELECT 
+    (SELECT COALESCE(SUM(jumlah), 0) FROM transactions WHERE tipe = 'setor' AND status = 'approved') - 
+    (SELECT COALESCE(SUM(jumlah), 0) FROM transactions WHERE tipe = 'tarik' AND status = 'approved') AS saldo_admin`;
+
+    db.query(sql, (err, result) => {
+        if(err) return res.status(500).json({ message: "gagal ambil laporan" });
+
+        db.query(sqlSaldo, (err2, result2) => {
+            if (err2) return res.status(500).json({ message: "gagal hitung saldo" });
+
+            res.json({
+                total_berat_kg: result[0].total_berat_kg,
+                total_nilai_setor: result[0].total_nilai_setor,
+                total_transaksi_setor: result[0].total_transaksi_setor,
+                saldo_admin: result2[0].saldo_admin
+            });
+        });
     });
 });
 
