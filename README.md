@@ -1,4 +1,4 @@
-# 🌿 BotLoop — Aplikasi Bank Sampah Sekolah
+# 🥤 BotLoop — Aplikasi Bank Sampah Sekolah 🏫
 
 BotLoop adalah aplikasi mobile bank sampah berbasis Android yang dirancang untuk memudahkan pengelolaan setoran dan penarikan saldo sampah plastik di lingkungan sekolah. Aplikasi ini menghubungkan siswa dengan admin/pengepul secara digital.
 
